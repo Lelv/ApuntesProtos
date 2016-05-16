@@ -1,0 +1,60 @@
+DHCP
+-----
+
+- Protocolo para asignacion dinamica de ips, y configuración de redes
+- Información
+	*IP
+	*Gateway
+	*Mascara
+	*DNS
+	*Mas...
+- Todas las peticiones son de lan
+- El cliente no sabe donde esta el servidor, lo descubre
+	*Manda broadcast (255.255.255.255) por LAN y el DHCP lo va a responder
+	*La data de /etc/resolv.conf vino por DHCP
+
+- Programas
+	*Servidor: dhcpd
+	*Cliente: dhcpcd, dhclient, pump
+	-> Configuar /etc/dhcpd.conf
+	OJO que se puede cagar todo
+
+-------Test---------
+=> DHCLIENT
+
+1)Prendo wiershark
+filter udp.port == 67
+
+$ sudo dhclient -v eth0  //renuevo mi ip
+
+$ sudo dhclient -v -r eth0 // release de la ip que tengo asignada
+
+$ sudo dhclient -v eth0  //consigo ip - discover -> request -> offer -> acknowledge
+
+-------><---------
+
+- Forwarding: si no es para mi, pero yo se donde esta para quien es, se lo envío
+
+- Regla de routeo - ejemplo
+Todo lo de 192.168.1.0/24 mandarlo a 10.6.0.4
+	* No escalable
+	* Solución: NAT (clase que viene)
+
+*************TP***************
+
+
+1) Definir interfaz - ir a /etc/default y poner
+INTERFACES="eth0"
+
+2) Servidor - debe tener su propio IP! Configurar con ifconfig
+sudo ifconfig eth0 192.168.1.1/24
+
+3) Activar forwarding
+/proc/sys/net/ipv4/ip_forward --> Cambiar a 1
+
+4) Tablas de routeo
+*Listar
+sudo route -n
+
+*Agregar
+sudo route add ____________________

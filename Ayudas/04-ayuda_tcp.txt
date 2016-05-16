@@ -1,0 +1,37 @@
+***TCP***
+
+1) 
+-Si logro establecer un handshake, se que esta activo
+SYN, SYN ACK, ACK
+
+-Ver si tengo un proceso escuchando un tcp
+$netstat -ntlp
+
+-etc services: resolver nombre -> puerto
+$cat /etc/services
+
+-ver si esta activo
+$nc localhost time
+
+-Si no hago el tecer paso, nunca va a salir del accept
+
+3) Levantar servicio echo (netcat o superservers)
+Cada cuanto el sistema operativo manda los paquetes TCP
+
+-Probar con diferentes tamaños
+
+4) Salir un poco de TCP e ir a UDP
+
+5) Mas teorico - para pensar
+
+
+8) 
+$nmap 127.0.0.1
+Escanea que puertos tcp estan en ese ip (tiene un registro de puertos populares)
+
+$nmap -sS 127.0.0.1
+--> El segundo S: Stealth - no manda el tercer paso del hanshake (ACK)
+	Con un netcat escuchando - lo mantiene abierto
+
+-Tipo de sistema operativo
+$nmap -O 127.0.0.1

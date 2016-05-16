@@ -1,0 +1,214 @@
+***************************
+Protocolos de Comunicación
+Guía Uno
+***************************
+
+===> HTTP: Direccionamiento
+
+1)
+Se llama Etag (Entity Tag)
+Los Etag sirven para hacer validaciones del cache de la web del lado del cliente. Esto permite que el cache sea guardado más eficientemente, y optimiza el uso del ancho de banda, ya que el servidor no necesita mandar una respuesta completa si el contenido no cambio.
+
+2) Un Uri-reference es un identificador de recurso. El uri resultante de la referencia solo incluye el URI absoluto, luego de que el identificador de fragmento es removido y luego de que cualquier URI relativo es llevado a su forma absoluta.
+
+URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment ]
+
+3)  http://a/b/c/d;p?q
+
+ 	  g:h           =  g:h
+      g             =  http://a/b/c/g
+      ./g           =  http://a/b/c/g
+      g/            =  http://a/b/c/g/
+      /g            =  http://a/g
+      //g           =  http://g
+      ?y            =  http://a/b/c/?y
+      g?y           =  http://a/b/c/g?y
+      #s            =  (current document)#s
+      g#s           =  http://a/b/c/g#s
+      g?y#s         =  http://a/b/c/g?y#s
+      ;x            =  http://a/b/c/;x
+      g;x           =  http://a/b/c/g;x
+      g;x?y#s       =  http://a/b/c/g;x?y#s
+      .             =  http://a/b/c/
+      ./            =  http://a/b/c/
+      ..            =  http://a/b/
+      ../           =  http://a/b/
+      ../g          =  http://a/b/g
+      ../..         =  http://a/
+      ../../        =  http://a/
+      ../../g       =  http://a/g
+      
+      /../g 		=  http://g
+      g/./h 		=  http://a/b/c/h
+      g#s/../x		=  http://a/b/x
+      g?y/./x		=  http://a/b/c/x
+
+
+4) 
+URL: Uniform Resource Locator
+URN: Uniform Resource Name
+
+La URL describe mas donde se encuentra algo, mientras que la URN describe su identidad.
+
+	1-URL	6-URN
+	2-URL	7-URL
+	3-URL	8-URN
+	4-URL	9-URN
+	5-URL
+
+5) Si, son equivalentes
+
+===> HTTP: Direccionamiento y XML
+
+6) Todas son URLS (?)
+
+===> HTTP: Funcionamiento de un cliente
+
+7) 
+*Request:
+------------------
+GET / HTTP/1.1\r\n
+------------------
+Host: localhost:9090\r\n
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:31.0) Gecko /20100101 Firefox/31.0 Iceweasel/31.8.0\r\n
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n
+Accept-Language: en-US,en;q=0.5\r\n
+Accept-Encoding: gzip, deflate\r\n
+Connection: keep-alive\r\n
+\r\n
+[Full request URI: http://localhost:9090]
+
+
+*Responder mal:
+jfkewljfelkwfjw
+
+*Responder bien:
+HTTP/1.1 200 OK
+Content-Type: text/html
+Content-Length: 24
+
+<html>sample html</html>
+
+8)
+nc -v www.google.com.ar 80
+GET / HTTP/1.1
+
+-> Devolvio
+HTTP/1.1 302 Found
+Cache-Control: private
+Content-Type: text/html; charset=UTF-8
+Location: http://www.google.com.ar/?gfe_rd=cr&ei=cRf0VrH7NMqB8QflsoH4CQ
+Content-Length: 262
+Date: Thu, 24 Mar 2016 16:36:01 GMT
+
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>302 Moved</TITLE></HEAD><BODY>
+<H1>302 Moved</H1>
+The document has moved
+<A HREF="http://www.google.com.ar/?gfe_rd=cr&amp;ei=cRf0VrH7NMqB8QflsoH4CQ">here</A>.
+</BODY></HTML>
+
+
+Lo que significa: La pagina se movio, tiro request code de redireccionamiento, y me indica donde se movio: asi que hago un segundo GET:
+
+GET /?gfe_rd=cr&amp;ei=cRf0VrH7NMqB8QflsoH4CQ HTTP/1.1
+Host: www.google.com.ar
+
+Header de response:
+HTTP/1.1 200 OK
+Date: Thu, 24 Mar 2016 16:39:43 GMT
+Expires: -1
+Cache-Control: private, max-age=0
+Content-Type: text/html; charset=ISO-8859-1
+P3P: CP="This is not a P3P policy! See https://www.google.com/support/accounts/answer/151657?hl=en for more info."
+Server: gws
+X-XSS-Protection: 1; mode=block
+X-Frame-Options: SAMEORIGIN
+Set-Cookie: NID=77=MEtlHQ95MbI2s_A0YESXOFylmxSVm_ursOQsjZ7AAWiH0M_ZFUfuw0Qwv0frOE8Y1Pqq5VqgVO2cAF52dMrIG3MdikPYZMhe-khwkNXZzBRbBwkcX0RwxXCenXNjYxbR; expires=Fri, 23-Sep-2016 16:39:43 GMT; path=/; domain=.google.com.ar; HttpOnly
+Accept-Ranges: none
+Vary: Accept-Encoding
+Transfer-Encoding: chunked
+
+8000
+
+En el body está la pagina web de google.com.ar
+
+	*a) Primero retorno "302 Found": significa que la pagina esta temporariamente en otro lugar, y el UA debe redireccionarse al URI que indica
+	Luego retorno 200 OK: encontro la pagina bien
+
+	*c) Date: fecha del servidor
+		Cache-Control: private
+			Significa que el cache es privado para el usuario y no debe ser compartido entre usuarios que comparten un mismo proxy
+		Content-Type: text/html; charset=ISO-8859-1
+			Significa que lo que esta devolviendo es un archivo HTML, cuya codificacion esta con el ISO 8859 1
+		Set-Cookie: ....
+			Genera un cookie que el UA debe guardar y luego mandar con cada futuro request
+
+
+===> HTTP: Funcionalidades que provee el protocolo
+
+9) Son equivalentes. Segun la rfc...
+- The type, subtype, and parameter attribute names are case-insensitive.  
+- Field names are case-insensitive
+
+10) Transfer-encoding:chunked reemplaza al Content-lenght header, porque no se manda un paquete de longitud N, sino que se mandan varios "chunks". El ultimo chunk es el de tamaño 0.
+	El servidor puede mandar datos sin saber bien
+cual va a ser el tamaño total de lo que mande. Cada pedazo tiene como primera linea el largo del mismo en hexadecimal, seguido por \r\n, y luego la data. Como en el ejercicio 8, el largo del chunk es 0x8000, que son 32768 bytes.
+Las posibles codificaciones son: chunked, compress, deflate, gzip, identity.
+
+11) Un media type define el formato de contenidos transmitidos. Se usa para identificar que tipo de archivo se esta transmitiendo, ya que el protocolo HTTP ya no se limita solo a hypertext. Esta estructurado con un tipo, un subtipo, y opcionalmente parametros de la forma: tipo/subtipo; parametros. Ejemplo: text/html; charset=UTF-8
+
+	i-text/html
+	ii-text/plain
+	iii- text/css
+	iv- text/javascript | application/javascript
+	v- image/jpeg image/gif image/png
+	vi- application/pdf
+	vii- ???
+
+
+12)
+¿Cuales son los requisitos para que un cliente pueda utilizar el esquema de conexiones persistentes de HTTP?
+
+Los beneficios son
+*Se abren menos conexiones TCP
+*Ahorro de tiempo de CPU y memoria usada
+*Requests y responses de HTTP pueden ser conectadas con pipe en una conexion - permite que un cliente tome muchos requests sin esperar cada respuesta. Una sola conexión TCP puede ser usada mas eficientemente
+*Congestion en la red es reducida por el numero de paquetes causados por TCP abiertos
+*Latencia es reducida ya que se reduce el tiempo usado en el handshake principal con conexiones de TCP
+*Errores se pueden reportar sin la penalidad de cerrar la conexión de TCP
+
+9) ---> REVISAR <---
+Los metodos son: GET, HEAD, POST, PUT, DELETE, TRACE, y CONNECT
+a- Un metodo es idempotente si (sin contar errores o problemas de expiracion), los efectos secundarios de varios requests identicos es EL MISMO que si se hubiera mandado un solo request.
+
+b- Va a hacer el llamado del GET, y borra lo del link. La culpa lo tiene el programador por hacer un link importante mediante un GET - se podria solucionar haciendo un POST.
+
+c- ???
+
+d- ---> LEER EL LINK <---
+*Usar GET si:
+   -> La interacción es mas como una pregunta (es una operación segura como un query, leer, o ver)
+*Usar POST si:
+	-> La interacción es mas como una orden
+	-> La interacción cambia el estado de un recurso en una manera que el usuario puede percibir (como una subscripción a un servicio)
+	-> El usario se hace responsable de los resultados de la interacción
+
+14) Me tira el error 405: Method not allowed (?)
+
+15) 
+a- 301: Moved Permanently
+b- 401: Unauthorized  (?) 
+c- 401: Unauthorized  (?)
+d- 409: Conflict
+e- Usaria el codigo 410 cuando no se encuentra la pagina y quiero informar del porque exactamente el request falló. El 404 solo indica que no lo encontró, pero no explica el porque.
+f- 400: Bad Request
+g- 400: Bad Request
+h-
+i- 503: Service Unavailable
+j- 501: Not Implemented
+
+
+24)
+
+g- Devuelve HTTP 304: Not Modified (si ya estaba en el cache) o HTTP 200: OK (si no estaba)

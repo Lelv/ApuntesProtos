@@ -1,0 +1,140 @@
+MAIL
+
+
+1) 
+$ dig -t MX alu.itba.edu.ar
+
+$nc -C ASPMXL.GOOGLE.COM. 25
+(respuesta del servidor)
+EHLO foo  //presentación - propiedades del servidor
+(respuesta del servidor)
+MAIL FROM: <foo@leak.com.ar> //el mail va a tener que pasar por varios servidores -> importante identificar al original
+							   Muy importante cuando hubo un error y no se pudo enviar el mail
+(respuesta del servidor) 
+RCPT TO: <jcodagno@alu.itba.edu.ar>
+(respuesta del servidor)
+DATA
+(respuesta del servidor) //Rfc 822
+From: <jcodagno@alu.itba.edu.ar> //lo que le va a aparecer al usuario
+To: <lalala@leak.com.ar>
+X-asdsa: lalal //Otro header cualquiera
+Subject: hola mundo!
+
+Hola Mundo //el body
+
+.
+
+(respuesta del servidor) 250 2.0.0 OK // Lo acepto! De ahi que lo entregue es otra cosa --> Se termino mandando
+
+
+
+
+***Mime***
+- Poder adjuntar archivos
+- Content-type
+- Multiparts: mandar varias partes de tipos diferentes
+
+- Manda mail a si mismo - ver original
+	*Lo que se mando en el body esta codificado
+	*Si programo un MUA (saber RFC 822)
+	*Content-Type: boundary= _________________ //delimitador - cada vez que aparece ese codigo es una nueva parte
+	*Codifico para... 
+		- Pasar bytes de 8 bits a 6 bits (64 caracteres)
+			AZ - az - 09 - + /
+		 #: 26 + 26 + 10 + 2 = 64
+		- Ver bytes texto
+			echo -n hól | od -tx1
+		- Cambiar codificacion
+			echo -n hól | iconv --from utf-8 --to iso-8859-1 | od -tx1
+		- Letras se va a codificar en bytes segun la convencion que utilicemos
+			unicode: 2^32 caracteres -> Varias formas de codificarlo -> Una es UTF-8 (compatible con ASCII)
+		
+		==> Como SMTP solo acepta hasta 7 bits (7F), codifico para que se pueda mandar
+
+		Ejemplo: 68 c3 b3 6c
+
+		/   68   /   /   c3   /  /   b3   /  /   6c   /
+		0110 1000    1100 0011   1011 0011   0110 1100
+
+		01 10 10 
+		00 11 00
+		00 11 10
+		11 00 11
+		01 10 11
+		00
+
+		- Decodificar
+		$ base64 -d
+		(texto a decodificar)
+
+		-MUA convirtio html en texto, le agrega algo, le da una interpretación (no hay RFC - convención)
+
+		- Mail con: texto + imagen + texto + attachment
+
+		 ________________
+		|				 
+		| ---------------
+		| | text plain
+		| ---------------
+		| | text html
+		| ---------------
+		|
+		|
+		|_________________ 1d3 (boundary)
+		|
+		|	Attachment
+		|_________________
+
+			*Content disposition: Si queremos que se vea en el mail, o como un attachment
+			*MUAs no suelen mostrar imagenes - pueden referenciar a links maliciosos
+
+
+
+4) 
+$nc -C smtp.speedy.com.ar 25
+
+--> Le pide autenticar 
+SMTPs no te suelen dejar mandar un mail a alguien fuera de su dominio (RCPT TO)
+
+
+6) Evitar el spam
+	- Grey Listing: Spam no suelen ser persistentes. Si dudo, pedir que me vuelvan a mandar el mail mas tarde -> bastante del spam no lo va a volver a hacer
+	- SPF: protejo mi dominio y a todos que tienen SPF - chequea DNS y se fija si el mail from tiene permiso para mandar de ese dominio
+			Que IP puede mandar mails de un cierto dominio. Se requeriria que todos usen SPF para matar todo 
+			    * Se usa dns para distribuir la información (include)
+	- Filtros bayesianos: probabilidad, le cuesta mucho al servidor
+
+
+***POP***
+RETR 3  // retorna el mail de id 3 --> no borra el mail
+DELE 3  // borra el mail EN CUANTO hagas quit, todavia podes deshacerlo 
+
+--Apps
+dovecot-pop3d 
+maildir (?)
+postfix --> Configuracion (/etc/postfix/conf.d)
+	*mydestination = _______ // de donde acepta los mails
+	*mynetworks = __________ // cuales son las direcciones ip que les permito enviar correos a cualquier destinatario
+
+	--- La posta ----
+	Local only: server solo va a aceptar conexiones de su computadora
+	Internet site: lo que queremos - nos va a dar un dominio
+	Satellite system: servidor smtp en cloud
+
+	--Dps de instalacion ---
+	cd /etc/postfix/
+	nano main.cf
+		*mydestination: todos los dominios para los cual vas a recibir (mandar?) correo //tmb busca en mynetwork
+
+	-- Donde esta el mail ? --
+	/var/mail
+	   *configurar con: home_mailbox: ________ // Maildir/
+
+
+***Start TLS: comenzar conexión cifrada***
+***Comando "mc": virtual commander (?) - ve los mails ***
+
+
+
+
+

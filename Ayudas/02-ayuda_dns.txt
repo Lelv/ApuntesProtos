@@ -1,0 +1,125 @@
+DNS
+
+- Resolver valores: Consulta una llave y un tipo de registro, y eso nos da un valor (no solo para acceder a direcciones ips)
+-Caracteristicas
+	*udp
+	*Sistema cliente/servidor
+	*Sistema federado (no en un solo lugar) - en una herarquia
+		Root servers
+	*Tolerante a fallas
+	*Cache y replicar
+-Herramientas: dig, host
+-Mi SO usa servidor DNS: 
+	1) /etc/resolv.conf
+	directiva search: ej.itba.edu.ar
+
+	Si despues hago ping foo => hace ping foo.ej.itba.edu.ar
+
+
+	2) /etc/nsswitch.conf
+
+- DNS Surname: Ayuda hacerlo mas portable
+
+Ej tenemos estos nombres
+db.app.com.ar. A 1.2.3.4
+www.app.com.ar. A 1.2.3.4
+ftp.app.com.ar. A 1.2.3.4
+
+Si en algun momento cambia la dreccion ip, tengo que actualizar los tres registros
+
+Una alternativa: 
+db.app.com.ar CNAME foo.app.com.ar
+www.app.com.ar CNAME foo.app.com.ar
+ftp.app.com.ar CNAME foo.app.com.ar
+
+foo.app.com.ar A 1.2.3.4
+
+- Python: simple http server
+$ python -m SimpleHttpServer -p 8080
+
+- Quien responde aun llamado dns
+$ dig -t A google.com.ar @ direccionIp
+
+-domains arpa: www.iana.org/domains/arpa
+
+- Root servers (www.root-servers.org)
+$ dig -t NS .
+
+- Ofrecer DNS: ip publica y fija
+
+==> Guia 3 - Parte cliente y parte servidor
+
+3) Todo el camino, consulta recursiva, usando dig
+dig pampero.it.itba.edu.ar @ _____________ (A que servidor dns le consulto el query)
+ -> A un NameServer, y despues se lo consulto a otro
+$ dig pampero.it.itba.edu.ar. @192.36.148.17
+
+5) ***TIPICO EJ PARCIAL***
+Olvidar lo del grupoNN -> poner lo que quiera
+Une http con DNS
+Cuando pongamos en el browswer o curl ese nombre, veamos la pagina principal del itba
+
+dig -t A itba.edu.ar 
+Resuelvo el ip
+Modifico /etc/hosts: Pego ip y pongo el nombre de la pagina
+
+(el default virtual host del itba es la pagina del itba)
+
+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+	--> Modificar Ejercicio <--
+Reemplazar pagina del itba por www.bolsar.com
+
+) dig www.bolsar.com -> Copiar IP -> Ponerla en hosts
+
+Ver headers de respuesta:
+$curl -I http://foo.li3.lab/
+
+-> Proxy transparente ==> Via: 1.0 skoll.itba.edu.ar:3128
+Va a armar un header con el header host, y va a intentar resolver foo.li3.lab, y eso le va a fallar
+
+	* No funciona asi: se resuelve con HTTP no con DNS
+	* Hay que hacer un proxy que redireccione bien y arme el header como lo quiero
+
+Bolsar no te responde si el host del request es diferente de www.bolsar.com
+
+--> Solución 1: Proxy
+--> Solución 2: ??? (Tmb requiere de nginx)
+
+
+
+SERVIDOR BIND
+-Maquina virtual: ifconfig -> puedo hacer ssh a ese ip
+
+- apt-get install bind9 (en la virtual)
+/etc/bind
+
+- Punto de entrada: named.confg
+	*Directiva zone: declarar que vamos a querer hablar de registros de ceirta zona
+		-> El archivo va a tener registro de x
+
+	ej:
+	zone "foo"{
+		type master;
+		file "/etc/bind/foo.local";
+	};
+
+	Archivo:
+	$TTL 604801 ;Macro para el TTL
+	foo. IN SOA localhost jcodagno.itba.edu.ar (
+		1      			;serial
+		604800			;refresh
+		86400			;retry
+		2419200			;Expire
+		604800			;Negative Cache TTL
+		)
+
+	foo. 60 IN NS a.foo
+	foo. 1 IN A 9.8.7.6
+	a.foo IN A 1.2.3.4
+	a 1 IN A 4.3.2.1
+	a.foo. IN A 127.0.0.1
+	www CNAME a.
+
+	---Fin archivo---
+
+- log en syslog

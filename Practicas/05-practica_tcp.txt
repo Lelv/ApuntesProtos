@@ -1,0 +1,46 @@
+1) Si logro establecer un handshake, se que esta activo
+-> Pruebo
+$nc localhost daytime/time/smtp/telnet
+->No se conectó con ninguno => Ninguno esta activo
+
+2) 
+Manda un paquete TCP con flag de SYN, y recibe otro paquete TCP con flags RST,ACK; que implica que no se pudo establecer la conexión.
+
+3)
+	i- Se realiza el three-way-handshake
+	SYN -> SYN, ACK -> ACK
+
+	ii- Cliente manda paquete request ECHO
+		Servidor manda paquete response Echo
+		Cliente manda ACK
+
+	iii-Hace lo mismo que en ii pero varias veces
+
+	iv- Manda los request y response uno atras del otro, sin mandar un ACK despues de un duo. Recien al final de todo manda el cliente un ACK
+
+	v-  Cliente manda FIN,ACK
+		Servidor manda FIN,ACK
+		Cliente manda ACK
+
+4)
+	i- No me permite con telnet
+	ii- Me puedo conectar, pero no hay handshake
+	iii- Cliente manda un Echo request
+		 Servidor manda un Echo response
+	iv- Igual que en iii
+	v- Me puedo desconectar, no hay msjes de fin de conexión
+
+	e- Cliente manda un Echo request, y despues manda un ICMP que dice Destination unreachable (Port unreachable)
+
+6) c-???
+7) ???
+
+8) El itba tiene 2 servicios activos - http y ssh
+Puerto   Servicio  Estado
+------   --------  ------
+22/tcp   ssh       open
+53/tcp   domain    closed
+80/tcp   http      open
+113/tcp  ident     closed
+
+Lo que hace nmap es mandar SYN a todos los puertos y ver si responden

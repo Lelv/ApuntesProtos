@@ -1,0 +1,39 @@
+********* Comandos Piolas *********
+
+- Ver datos ip
+/sbin/ifconfig
+
+- Ver aparatos conectados a la red
+sudo nmap -sP XXX.XXX.XXX.0/24
+(sacar direccion IP con ifconfig)
+
+- Ver conexiones
+sudo netstat -nlp
+ *u: udp  // *t: tcp
+
+- Crear "servidor" 
+nc -lv XXXX
+(puerto XXXX y ip = localhost (suele ser 127.0.0.1))
+
+- Crear "cliente"
+nc localhost XXXX
+(mismo puerto XXXX que el servidor)
+
+-Escanear puertos
+nc -vnzw 1 XXX.XXX.XXX.XXX A-B
+
+Ejemplo: 192.168.1.2 75-85
+
+- Listar syscalls
+strace
+  -->Usar con netcat: strace nc -lv XXXX
+
+- Encontrar ip de pagina web
+dig www.xxxxxxx.com
+
+-Ver puertos abiertos (l:listen / p:programa / t: tcp)
+netstat -ntlp
+	->Con el comando -c lo hace iterativamente, puede ver como evoluciona
+
+- Hostear archivos servidor HTTP
+python -m SimpleHTTPServer 8000

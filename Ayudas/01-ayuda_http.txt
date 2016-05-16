@@ -1,0 +1,120 @@
+Protocolos
+
+*Siempre tenemos una interfaz de red que esta conectada a la misma computadora => Localhost (Suele ser 127.0.0.1)
+
+* ifconfig: que interfaz de red tengo
+
+*Netcat: Escuchar puerto
+nc -l 8080
+-> q: paremetro de los media types que le da prioridad a los formatos que acepta (Valor de 0 a 1). Afecta a todos a los formatos que esta a su izquierda hasta que encuentra otro q.
+-> encoding: codificacion de los recursos para el transporte (ej: comprimir)
+
+*Netcat: respondiendo
+
+HTTP/1.0 200 Esta todo bien!   //HEADER
+Content-Type: text/plain
+
+hola mundo!					   //BODY
+
+//Control+D: Manda EOF --> Termina netcat
+
+*strace nc -l 8080 : Lista todas las system calls
+
+*El host no es case sensitive, el path si
+
+*Ejercicio 8
+
+1) Crear en nano archivo: 
+http://www.google.com/
+
+2) Estabelezco conexion
+nc www.google.com 80
+
+2') Estabelezco conexion con el ip posta
+nc 64.233.190.104 80
+//La encuentro con el programa dig
+dig www.google.com (Answer section)
+
+3)Escribo mi request
+GET / HTTP/1.0
+Host: www.google.com
+X-asdsa: adsdas
+Agdfg: asdsada
+
+4) Sigo el redireccionamiento
+nc 64.233.190.94 80
+GET /?gfe_rd=cr&ei=f5boVor_NcSxgSiqrmICA HTTP/1.0
+Host: www.google.com.ar
+
+*Redirect
+ - Tiene que mandar header de a donde estamos yendo
+
+*Me muestra el response
+ curl http://www.google.com -i
+    *-v : informacion de debugging
+
+*Wireshark
+ - Filtro: http
+
+ * Codificacion
+ echo -n _______________ | base64 -d
+
+ *Trabajar con tres terminales
+ 1) Entorno de texto
+ 2) Logs
+ 3) (Re)Iniciar el servidor
+
+ *Nginx
+ 1) Instalar
+ apt-get install nginx
+// Buscar: apt-cache search nginx | grep nginx
+
+2) Usarlo
+/etc/init.d/nginx [start|status|reload]
+
+-> Ver si corre
+ps aux|grep nginx
+curl http://localhost/
+
+->Ver los sockets en el sistema
+netstat -ntlp
+ *t: tcp
+ *l: listen
+ *p: informacion del proceso
+ *n: no resolver nombres (ver ips)
+
+ 3) Ver logs (con * abre todos los archivos)
+ /var/log/nginx tail -f *
+
+  -> Columnas:
+ Cliente | usuario | ? | fecha request | 1ra linea request |status code rta | cant bytes rta | Referrer |UA
+
+ 4) Ver configuracion
+ cd /etc/nginx
+ vi nginx.conf
+
+ +) Sites
+   - Sites available: la posta
+   - Sites enabled: links a las paginas en sites enabled
++) Habilitar hosts
+sudo vi /etc/hosts
+
+//Header host
+curl -Hhost:foo http://127.0.0.1/
+
+5) Cambio default
+
+server{
+	root /home/lelv/sites/bar/;
+	:index index.html index.htm
+
+	acces_log /var/log/nginx/foo.log
+	error_log /var/log/nginx/foo_error.log
+
+	server_name bar
+}
+
+6) Para linkear: ln -s
+
+7) Recargar configuracion (cambios a tiempo real)
+/etc/init.d/nginx reload 

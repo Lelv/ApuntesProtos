@@ -1,0 +1,48 @@
+Guia 3 - DNS
+
+1)
+a- 
+ns2.google.com.
+ns1.google.com.
+ns4.google.com.
+ns3.google.com.
+
+b-
+ns2.itba.edu.ar.
+ns1.itba.edu.ar.
+
+c-
+crystal.it.itba.edu.ar.
+
+2)
+a- 
+alt1.aspmx.l.google.com.
+alt4.aspmx.l.google.com. 
+alt3.aspmx.l.google.com. 
+alt2.aspmx.l.google.com. 
+aspmx.l.google.com.	
+
+b-
+ALT1.ASPMX.L.GOOGLE.COM.
+ALT2.ASPMX.L.GOOGLE.COM. 
+ALT3.ASPMX.L.GOOGLE.COM.
+ALT4.ASPMX.L.GOOGLE.COM.
+ASPMX.L.GOOGLE.COM.
+
+3)
+dig . NS
+dig @g.root-servers.net. ar
+dig @ns2.switch.ch. edu.ar
+dig @ns1.riu.edu.ar. itba.edu.ar
+dig @ns2.itba.edu.ar. it.itba.edu.ar
+dig @crystal.it.itba.edu.ar. pampero.it.itba.edu.ar
+
+--> Resultado: 190.104.209.211
+
+4) Hace lo mismo que en el punto tres, solo que más extenso. Al analizar los paquetes con wireshark, se puede ver que dig le hace consulta a todas las respuestas que recibe, y esto termina haciendo muchas consultas DNS (hizo entre idas y vueltas 131 paquetes - y yo antes hice 12)
+
+
+5)
+-> Opcion uno: Modificar /etc/hosts
+190.104.250.117 lala.com
+

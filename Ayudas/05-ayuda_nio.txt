@@ -1,0 +1,36 @@
+* ThreadPoolSocketServer
+
+socket = serverSocket.accept();
+socket.setSoTimeout(500);
+  --> Si en medio segundo no escribe, salgo (no cierra el socket - tira Excepcion - en catch/finally lo puedo cerrar)
+
+
+
+* La escritura siempre es bloqueante - debo usar NIO
+
+*Los procesos van tan rapidos como el primer recurso que se agota.
+Ancho de banda limitado que depende la conexión que tengo (que tan rapido leo/escribo)- independiente del CPU.
+Estamos acotados por proceso por Input-Output, no por CPU 
+(asumiendo que nuestro protocolo requiere muy poco procesamiento para resolver un pedido)
+Elimino la cantidad de threads que quieren acceder a un mismo recurso
+
+*Channel: recurso al que le pregunto si esta disponible
+Puede mapear a un archivo, pipe, socket, etc
+
+*Selector: estructura que le registramos channels y le pedimos que avise cuando uno esta disponible
+
+* if (selector.select(TIMEOUT) == 0 )
+  --> Buen momento para hacer mantenimiento (garbage collector, etc)
+
+ *Attachment: guardo el estado asociado a esa conexión (en clntChan.register(selector, selection_key, ATTACHMENT))
+ 	Puede ser lo que quiera - hast aun objeto propio con mi lógica
+
+ *No suele ser suficiente para pedidos pesados
+ Patron Reactor:
+ Voy a tener un solo thread para Input/Output, y N working threads para procesar pedidos
+ Read y Writes se hacen desde el principal, los threads solo hacen el computo pesado
+
+Los working processes pueden poner sus trabajos terminados en 
+una lista con acceso concurrente, y despues dentro del while(true) del thread
+principal verifica si hay elementos en esa cola y los escribe
+Ej:ConcurredLinkedQueue

@@ -1,0 +1,80 @@
+*** Practica mail ***
+
+1)
+$dig mx alu.itba.edu.ar
+
+;; ANSWER SECTION:
+alu.itba.edu.ar.	60	IN	MX	10 ALT4.ASPMX.L.GOOGLE.COM.
+alu.itba.edu.ar.	60	IN	MX	1 ASPMX.L.GOOGLE.COM.
+alu.itba.edu.ar.	60	IN	MX	5 ALT1.ASPMX.L.GOOGLE.COM.
+alu.itba.edu.ar.	60	IN	MX	5 ALT2.ASPMX.L.GOOGLE.COM.
+alu.itba.edu.ar.	60	IN	MX	10 ALT3.ASPMX.L.GOOGLE.COM.
+
+2)
+
+lelv@lap-kali:~$ nc -C ASPMX.L.GOOGLE.COM. 25
+220 mx.google.com ESMTP 74si15078308ual.61 - gsmtp
+EHLO foo                  
+250-mx.google.com at your service, [190.104.250.98]
+250-SIZE 157286400
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+MAIL FROM: <lllorca@itba.edu.ar>
+250 2.1.0 OK 74si15078308ual.61 - gsmtp
+RCPT TO: <lllorca@itba.edu.ar>
+250 2.1.5 OK 74si15078308ual.61 - gsmtp
+DATA
+354  Go ahead 74si15078308ual.61 - gsmtp
+From: <lllorca@itba.edu.ar>
+To: <lllorca@itba.edu.ar>
+Subject: PDC Ejercicio 1
+
+hola mundo
+
+.
+250 2.0.0 OK 1461071185 74si15078308ual.61 - gsmtp
+quit
+
+
+e- Si en RCPT TO pongo una cuenta
+	* que no es del servidor: me dice que no lo permite
+	* que no existe pero si es del servidor: tira error diciendo que el mail no existe
+
+
+
+5)
+Peso original: 134829 bytes
+Peso Base64: 182137 bytes
+
+Diferencia:  47308 bytes -> 35% mas
+
+Aproximación: (134829 * 8)/6 = 179772  --> Diferencia con posta: 1.3%
+
+------------
+Deshacer una imagen que estaba en base64
+
+$base64 -d < archivo64 > archivo_normal.jpg
+
+
+6)
+SPF: Sender Policy Framework - chequea que el email proveniente de un dominio viene de de un host autorizado por los administradores del dominio
+
+Domain Keys: Usa clave privada/publica para marcar mensajes, y el que lo recibe puede fijarse que no fue alterado.
+https://www.siteground.com/kb/what_is_domainkeys_and_how_to_use_it/
+
+Grey Listing: rechaza temporalmente todo mail de un origen que desconoce - si el servidor que lo mando era legitimo, vuelve a mandarlo despues de un delay
+
+Filtro bayesiano: busca palabras claves comunmente asociadas como spam y si sospecha que es spam, lo marca como tal.
+
+
+**** Base 64 ****
+
+1)
+
+2)
+Y2hhdQ==
+

@@ -1,0 +1,16 @@
+==> Practica 2
+
+2) Tira un error
+Exception in thread "main" java.net.SocketException: Connection reset
+Lo tira porque intenta escribir en una conexión que del otro lado ya cerró
+
+4) Recibo parte del mensaje - pero no tira ningune error de ningun lado
+
+5) ???
+
+6) El mayor tamaño de datos que puedo mandar mediante UDP es 65 mil caracteres. Para TCP no existe tal limite, ya que la data se puede dividir en paquetes que despues se unen.
+
+7) No lo haria porque los terceros tendrian que saber como funciona el servidor por dentro. Si los clientes fuera solo creados por mi, entonces no tendria problema, y me resultaria muy sencillo mandar objetos serializables de esa manera, aprovechando la utilidad que me brinda Java. Pero como ese no es el caso, los clientes creados por terceros tendrian que saber como son mis objetos para poder mandarlos, y eso no es seguro ni portable. Una alternativa mejor sería mandar los datos mediante un XML o un JSON.
+
+8) 
+
