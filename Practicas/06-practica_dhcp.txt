@@ -1,0 +1,20 @@
+-------------------------------
+Ejemplo dhcpd.conf
+
+server-name lelvserver;
+default-lease-time	604800;
+min-lease-time		86400;
+max-lease-time		864000;
+
+option subnet-mask	255.255.255.0;
+option domain-name	"frula.com";
+option domain-name-servers	200.42.4.210, 200.49.130.44;
+option interface-mtu	1500;
+
+subnet 123.45.6.0 netmask 255.255.255.0{
+	option routers 123.45.6.1;
+	option broadcast-address 123.45.6.255;
+	range 123.45.6.2 123.45.6.254;
+}
+
+----------------------------
