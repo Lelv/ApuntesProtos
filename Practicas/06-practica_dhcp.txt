@@ -18,3 +18,24 @@ subnet 123.45.6.0 netmask 255.255.255.0{
 }
 
 ----------------------------
+
+
+Ejemplo Forward
+
+-> PC1: Servidor // 123.45.6.1 - 198.76.5.1
+   PC2: Cliente  // 123.45.6.5
+   PC3: Otra computadora (conectada con el servidor) // 198.76.5.2
+
+* Forwarding 1
+* PC2 debe tener como gateway al IP del PC1 (que funciona como router) - lo deberia tener x default
+Destination	Gateway	 	Genmask
+0.0.0.0		123.45.6.1	0.0.0.0
+
+* PC3 debe saber llegar a quien mando el mensaje original, sino el sistema operativo lo filtra - agregarlo manualmente
+$route add -net 123.45.6.0/24 gw 198.76.5.1 eth0
+
+------------------------------
+
+Crear interfaz virtual
+
+$ifconfig eth0:payaso 3.3.3.3/24
