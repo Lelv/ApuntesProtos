@@ -1,4 +1,4 @@
-package posta;
+package debug;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -28,6 +28,12 @@ public class NioConnection {
         this.terminated = false;
     }
 
+    public NioConnection(SelectionKey sk, ByteBuffer bb, boolean connected){
+        this.selectionKey = sk;
+        this.byteBuffer = bb;
+        this.connected = connected;
+    }
+
     public SelectionKey getSelectionKey(){
         return selectionKey;
     }
@@ -53,6 +59,7 @@ public class NioConnection {
     }
 
     private void terminate(){
+        System.out.println("Seteo terminated");
         this.terminated = true;
     }
 
@@ -60,4 +67,7 @@ public class NioConnection {
         return this.terminated;
     }
 
+    public boolean prueba(){
+        return selectionKey.channel().isOpen();
+    }
 }

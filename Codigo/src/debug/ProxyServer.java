@@ -1,4 +1,4 @@
-package posta;
+package debug;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -6,8 +6,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.util.Iterator;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by lelv on 5/21/16.
@@ -35,6 +33,14 @@ public class ProxyServer implements Runnable{
 
                 if(selector.select(TIMEOUT) == 0){
                     //hacer algo piola
+                    Iterator<SelectionKey> keys = selector.keys().iterator();
+                    int i = 0;
+                    System.out.println("\n\n***********************");
+                    while(keys.hasNext()){
+                        SelectionKey key = keys.next();
+                        System.out.println(key.toString());
+                    }
+                    System.out.println("***********************\n");
                     continue;
                 }
                 Iterator<SelectionKey> keyIter = selector.selectedKeys().iterator();
@@ -43,7 +49,10 @@ public class ProxyServer implements Runnable{
                     SelectionKey key = keyIter.next();
                     keyIter.remove();
 
-                    if(!key.isValid()) continue;
+                    if(!key.isValid()){
+                        System.out.println("NO VALIDO");
+                        continue;
+                    }
 
                     if(key.isAcceptable()){
                         handler.handleAccept(key);

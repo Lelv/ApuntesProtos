@@ -1,4 +1,4 @@
-package posta;
+package debug;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -26,7 +26,10 @@ public class Handler {
 
         SocketChannel socketChannelClient = ((ServerSocketChannel) key.channel()).accept();
 
-        if(socketChannelClient == null) return;
+        if(socketChannelClient == null){
+            System.out.println("NULL");
+            return;
+        }
 
         ByteBuffer buffer = ByteBuffer.allocate(1024);
         socketChannelClient.configureBlocking(false);
@@ -56,8 +59,6 @@ public class Handler {
         System.out.println("---Handling Read--- " + key.toString());
         NioConnection nc = (NioConnection) key.attachment();
 
-        if(!nc.isConnected()) return;
-
         SelectionKey otherKey = nc.getSelectionKey();
         SocketChannel actualChannel = (SocketChannel) key.channel();
 
@@ -65,14 +66,20 @@ public class Handler {
         long bytesRead = actualChannel.read(buf);
 
         System.out.println(new String(buf.array()));
-        if(bytesRead > 0){
+        if(bytesRead > 0 && nc.isConnected()){
             otherKey.interestOps(SelectionKey.OP_WRITE);
         }
 
+
         if(bytesRead == -1){
+            actualChannel.close();
             if(buf.hasRemaining()){
-                System.out.println("-** Setting terminated **-");
+                System.out.println("Remaining: " + buf.remaining());
+                System.out.println("Position: " + buf.position());
+                System.out.println("Limit: " + buf.limit());
                 nc.setTerminated();
+                System.out.println("CANELO KEY: " + key.toString());
+                key.cancel();
                 otherKey.interestOps(SelectionKey.OP_WRITE);
             }else{
                 System.out.println("-*- Closing Channels (read)-*-");
@@ -80,9 +87,31 @@ public class Handler {
                 otherKey.cancel();
 
             }
+
+        }
+
+        /*
+        if(bytesRead == -1){
+            System.out.println("READ DONE");
             actualChannel.close();
             key.cancel();
-        }
+        }*/
+
+        /*
+        if(bytesRead == -1){
+            SocketChannel otherChannel = (SocketChannel) nc.getSelectionKey().channel();
+            if(buf.hasRemaining()){
+                buf.flip();
+                while(buf.hasRemaining())
+                    otherChannel.write(buf);
+            }
+            System.out.println("-*- Closing Channels -*-");
+            actualChannel.close();
+            otherChannel.close();
+            nc.getSelectionKey().cancel();
+            key.cancel();
+        }*/
+
 
     }
 
@@ -96,15 +125,36 @@ public class Handler {
         actualChannel.write(buf);
 
         if (!buf.hasRemaining()) {
+            System.out.println("!BUF hAS REMAINING");
+            System.out.println("IS terminated: " + nc.isTerminated());
             if(nc.isTerminated()){
                 System.out.println("-*- Closing Channels (write) -*-");
-                actualChannel.close();
                 key.cancel();
+                actualChannel.close();
             }else{
                 key.interestOps(SelectionKey.OP_READ);
             }
 
         }
+
+        /*
+        if(!buf.hasRemaining()){
+            if(!nc.prueba()){
+                System.out.println("wRITE DONE");
+                actualChannel.close();
+                key.cancel();
+            }else{
+                key.interestOps(SelectionKey.OP_READ);
+            }
+        }*/
+
+        /*
+        if (!buf.hasRemaining()) {
+            key.interestOps(SelectionKey.OP_READ);
+            //ACA IRIA LLAMADO AL POOL DE THREADS PARA QUE TRABAJE
+            //Y DESPUES ÉL SETEARIA EL KEY PARA QUE SEA LEIDO
+        }*/
+
         buf.compact();
     }
 }
