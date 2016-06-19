@@ -1,0 +1,120 @@
+SSH
+
+*Conectarse a maquina virtual
+$ssh usuario@192.168.122.95
+ -> Warning: forma de autenticar que el servidor es a quien me intento conectar
+
+ *Known hosts - nombre, direccion ip, y llave de los que ya me conecte
+ $vi .ssh/known_hosts
+
+*
+$ssh-keygen -l -f /etc/ssh/ssh_hosts_rsa_key.pub
+  -> Devuelve el fingerprint
+  -> Pueden estar en base 64
+
+* Si no quiero ingresar mi llave toda las veces - setear mi clave como autorizda en la otra maquina
+$ssh-keygen 
+	-> En que archivo quiero guardar la llave
+	-> Passphrase: Protejer el archivo con contraseña
+	-> Dos archivos
+		- id_rsa: Private key
+		- id_rsa.pub: Public key
+
+	*Pongo como clave autorizada en la maquina virtual la mia publica
+		$vi authorized_keys
+
+* Si me dan clave privada
+	(En maquina virtual)
+	- Creo nuevo key
+	- Pongo el publico como authorized key
+	- Copio el private key
+	(En mi maquina)
+	- Pego en mi maquina la clave en un archivo (ej foo.pem)
+	- Decirle a ssh que use una clave privada especial
+		$ssh -i foo.pem -l juan 192.168.122.95
+	- Tira warning poruqe el archivo no tiene seguridad - clave desprotegida: Cambiar permisos
+		$chmod 400 foo.pem
+	- Tiro mismo comando- Funciona!
+
+*Conclusion: dos formas de conectarme sin contraseña
+	- Guardar mi clave publica en la maquina virtual
+	- Guardar la clave privada de la maquina virtual en mi maquina
+
+*Ojo pegando, tiene que ser todo una linea
+
+*Ssh agent: proceso que guarda en memoria la contraseña asi el cliente ssh le pregunta al agente
+
+*Forwarding del agente de ssh
+$ssh -A _____________
+(forwadea la autenticación de las llaves)
+	-> Me conecto a una computadora, y de esa computadora intento conectarme con otra
+		* No funciona por la llave
+	-> En primera maquina habilito forwarding de autenticacion (-A) y en el segundo sin poner -A puede conectarse
+		* La segunda comptuadora puede conectarse con la mia original y autentica la llave
+	-> Puedo conectarme hasta N computadoras, siempre poniendo -A en N-1
+
+
+---Tuneles---
+
+*Tipos de tuneles
+	- ssh: conectar un puerto local a un puerto remoto - gano seguridad
+
+*Idea: Utilizar una base de datos remota donde mi computadora no tiene acceso, pero si puedo acceder mediante ssh
+	Conectado a una maquina en staging.e.flowgics.com con posgres (puerto 5432)
+
+	- Intento hacer nc a la maquina
+		$nc staging.e.flowics.com 5432 --> No llega la conexion, pero quiero llegar a ese servicio
+
+*Idea: conectarme a web server que esta en mapper01.e.tribartics.com:9092
+	-> Desde mi computadora no puedo
+	-> Desde esa computadora (localmente) si se puede --> Conectarme via ssh
+
+	- Forwarding de puerto - desginar un puerto donde vamos a habilitar localmente (ej: 8080) 
+		$ssh -L8080:localhost:9092 mapper01.e.tribatics.com
+		-> Ssh va a crear un socket servidor en el puerto 8080, y se va conectar localhost 9092 en mapper01.e.tribatics.com
+		-> Proxy que va a transmitir la información medainte ssh
+		-> Puedo poner localhost porque se interpreta localmente, entonces una vez ya conectado (en la otra maquina)
+			localhost es lo mismo que mapper01.e.tribatics.com
+	-Lo pruebo
+		$curl http://localhost:8080 --> Funciona!
+
+	- Si me quiero conectar a una segunda computadora
+		Quiero acceder a servicio web api01 en puerto 9091 pero no puedo acceder directo, solo mediante mapper
+		dinah| ---SSH---> mapper01 --SSH--> api01:9091
+
+		$ssh -A -L8080:localhost:9093 mapper01-e-tribatics.com --> 9093: puerto arbitrario donde va a escuchar
+
+		Ahora de mapper preparo lo de api
+		$ ssh -L9093:localhost:9091 api01.e.tribatics.com
+
+		-Lo pruebo
+		$curl http://localhost:8080 --> Funciona!
+
+* -G: exponer el puerto local a todas las interfaces
+
+* Tunel reverso: habilitar un puerto mio para que se pueda conectar
+	-Diponibilizo un servicio
+		$nc -l 9090
+
+	-Habilito el tunel inverso
+		$ssh -R8080:localhost:9090 mapper01.e.tribatics.com
+
+		-> En la maquina de mapper habilita el puerto 8080 para conectarse a mi maquina, donde accede a localhost 9090
+
+*Idea: Tengo bloqueado el puerto 80 localmente, pero una maquina virtual no
+	$ssh -L8080:www.google.com.ar:80 mapper01.e.tribatics.com
+
+	Localmente
+	$curl -Hhost:www.google.com.ar http://localhost:8080
+
+	- Funciona, pero no escala
+	Idealmente, tener un proxy server en 8080 que nos redireccione a lo que necesito
+
+*Tunel dinamico
+	$ssh -D 1080 mapper01.e.tribatics.com
+	-> En el puerto 1080 abrime un server socket, y todo lo que me mande ahi, interpretalo cmo un proxy socks - quiero instanciar un csocket una tocnexion tcp a tal puerto - quiero enviar tales bytes, quiero recibbir...
+
+	Corro el chrome con proxy server
+	$google-chrome --proxy-server="socks5:localhost:1080"
+
+	-> Todas las directivas que reciba localmente 1080 las va a redireccionar a mapper01

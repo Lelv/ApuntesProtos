@@ -37,5 +37,13 @@ $route add -net 123.45.6.0/24 gw 198.76.5.1 eth0
 ------------------------------
 
 Crear interfaz virtual
+ginado a un
+$ifconfig eth0:payaso 3.3.3.3/24 
+(ifconfig interfaz:alias ip/mascara)
 
-$ifconfig eth0:payaso 3.3.3.3/24
+Permite
+	- Con una sola interfaz fisica tener dos ips asginadas a la misma red
+	- Si estoy asignado a un espacio de switch, que me vengan los paquetes de varios ips y tener mis interfaces virtuales acorde (?)
+
+
+

@@ -1,0 +1,57 @@
+Firewalls
+
+-Herramienta: iptable
+
+- Controlar que paquetes dejamos pasar en la interfaz
+- Tablas y cadenas
+	*cadenas: secuencia de reglas de los mensajes -> si se cumple cierta condición hacer una acción
+
+- Cada vez que reinicio la maquina, las cadenas se vacian (script para llenarlas)
+- Tablas
+	*Filter: para filtrar las tablas
+		-> Input: reglas que filtran los paquetes que entran a una interfaz
+		-> Output: filtrar paquetes que salen de la intefaz
+		-> Forward: filtrar paquetes de interfaz a interfaz
+	*Nat: nat (que buenos apuntes)
+
+- Diagrama
+	*Tabla -> Cadena
+
+- Listar las cadenas (por default muestra la filter)
+$iptables -L
+
+	*diferente tabla: $iptables -t nat
+
+- Ver como evoluciono el git
+$git log --reverse -U
+
+- Agarrar versión XXXX
+$git checkout XXXX
+
+- Analisis script
+	*Saco el ipforwarding por seguridad
+	*iptables -F: borra todas las reglas de todas las cadenas
+	*iptables -P FORWARD DROP: defino la acción por default de las tablas
+		-> Ningun paquete va a poder entrar ni salir (si defino todas las tablas asi y sin cadenas)
+		-> Drop no avisa por ICMP que no acepto, REJECT si avisa
+
+	*Crear log en syslog
+		-Limitar el login a una vez por segundo
+		$iptables -A INPUT -m limit --limit 60/min -j LOG --log-prefix "IN DENIED: " \ --log-level 7
+	*Definir protocolos: $iptable -p tcp
+
+	*SNAT: cambiar direccion ip origen
+	*DNAT: cambiar direccion ip destino
+
+
+- Acción por default - (policy ACCEPT)
+	-> Si no matchea en ninguna cadena, hace lo que dice ahi
+
+- Acceder pagina de internet
+	1) Resolver nombre DNS: abilitar mandar y recibir mediante udp en puerto 53
+	2) Paquetes web: tcp 80 y 443 (tsl)
+
+- Ver mensajes y los borra del buffer
+$dmesg -c
+
+- Related y established lo mas arriba posible

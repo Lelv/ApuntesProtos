@@ -1,0 +1,14 @@
+Parcial: 
+	-Ej: profe abre un host con ip fuera de la red del itba, y hacer que se hablen
+	-Ej2: configuracion manual ARP
+	- Comandos: route, ifconfig
+
+Arp: si yo se el IP destino, tengo que ir a la capa de enlace, y poner un paquete que esta apuntado a un host del que soy directamente vecino (switch/hub/directo). Necesito la MAC adress (como el IP pero de nivel red).
+	- Hablo con mis vecinos 
+	- UDP broadcast
+	- Se puede hacer ARP poisoning (como DNS poisoning)
+		H1 pregunta por H3, yo (H2) le digo que soy yo, y todos los paquetes pasan por mi
+		Yo forwadeo a H3, y la respuesta la devuelvo a H1 (ni se entera que yo estoy en el medio)
+	- Comando: ARP -n
+		* Puedo configurar cosas a mano
+	- Entradas volatiles (duran muy poco tiempo)
