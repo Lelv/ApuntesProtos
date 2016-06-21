@@ -1,0 +1,193 @@
+Temas
+	- Capa de Transporte: TPC, UDP
+	- Capa de red: IP, NAT, ICMP, DHCP, Subredes, CIDR
+	- Routing: estatico, dinamico, RIP, OSPF
+	- Enlace: Ethernet, ARP
+	- SSH: keys, forwarding
+	- Firewalls
+
+Protocolos:
+	- ARP 
+		* Descubir que MAC le corresponde dado un numero IP
+		* Nivel enlace
+		* Commando: $arp --> APRENDERLO
+
+
+Comandos
+
+---------------------------------------
+1) ifconfig
+- Agregar alias
+$ifconfig eth0:payaso 1.2.3.4/24
+
+- Remover alias
+$ifconfig eth0:payaso down
+
+- Setear propia ip
+$ifconfig eth0 192.168.1.1/24
+
+---------------------------------------
+
+2) route
+
+-Agregar a la tabla
+$route add -net 123.45.6.0/24 gw 198.76.5.1 eth0
+
+- Borrar de la tabla
+$route del -net 123.45.6.0/24 gw 198.76.5.1 eth0
+
+- Setear default
+$route add default gw 192.168.99.254
+  o
+$route add -net 0.0.0.0 netmask 0.0.0.0 gw 192.168.99.254
+
+- Rechazar ir a ciertos destinos (ej, ip del itba)
+$route add -host 190.104.250.104 reject
+
+- Significado: Destination 0.0.0.0/0
+The default route in Internet Protocol Version 4 (IPv4) is designated as the zero-address 0.0.0.0/0 in CIDR notation,1 often called the quad-zero route. The subnet mask is given as /0, which effectively specifies all networks, and is the shortest match possible. A route lookup that does not match any other route, falls back to this route. Similarly, in IPv6, the default route is specified by ::/0.
+
+- Significado: Gateway 0.0.0.0
+0.0.0.0 has the specific meaning "unspecified". This roughly translates to "there is none" in the context of a gateway. Of course, this means that the network is locally connected, as there is no next hop.
+
+- Mas data: http://www.cyberciti.biz/faq/what-is-a-routing-table/
+
+---------------------------------------
+
+3) arp
+
+- Setear una entrada (debe estar dentro de mi red)
+$arp -s 192.168.0.23 00:00:21:fe:77:03
+
+- Borrar entrada
+$arp -d 192.168.0.23
+
+---------------------------------------
+
+4) ssh
+
+- Tunel
+$ ssh -L8000:localhost:9000 192.168.0.14
+	->8000: puerto de la maquina local
+	->localhost: ip destino del lado de la maquina remota
+	->9000: puerto de la maquina remota
+	->192.168.0.14: direccion ip de la maquina con ssh
+
+- Tunel reverso
+$ ssh -R8000:localhost:9000 192.168.0.14
+	->8000: puerto de la maquina remota que permito que se conecte conmigo
+	->localhost: ip destino del lado de la maquina local
+	->9000: puerto de la maquina local que habilito a escuchar
+	->192.168.0.14: direccion ip de la maquina con ssh
+
+
+---------------------------------------
+
+5) iptables
+
+- Ver la table y reglas
+$iptables -L
+	-> Columnas (http://www.thegeekstuff.com/2011/01/iptables-fundamentals/):
+		num – Rule number within the particular chain
+		target – Special target variable that we discussed above
+		prot – Protocols. tcp, udp, icmp, etc.,
+		opt – Special options for that specific rule.
+		source – Source ip-address of the packet
+		destination – Destination ip-address for the packet
+
+- Borrar todas las reglas de las cadenas
+$iptables -F
+
+- Borrar las cadenas definidas por usuario
+$iptables -X
+
+- Resetear los contadores
+$iptables -Z
+
+- Setear acción default
+$iptables -P [FORWARD|INPUT|OUTPUT] [ACCEPT|DROP|REJECT|LOG|MIRROR|QUEUE|REDIRECT|RETURN]
+
+- Agregar regla al final de la cadena (append) == -A
+$iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+	-> Estados: NEW | ESTABLISHED | RELATED | INVALID
+	-> -j : Acción a tomar
+
+- Generar log (http://www.thegeekstuff.com/2012/08/iptables-log-packets/)
+$iptables -A INPUT -m limit --limit 60/min -j LOG --log-prefix "IN DENIED: " --log-level 7
+
+	->limit: limite de logs por unidad de tiempo
+	->prefix: que agregar antes de cada log - poner lo que yo quiera
+	->level: syslog level - numeros de 0 a 7 | 4 = warning | 7 = debug
+
+	->Verlo en syslog: $tail /var/log/syslog
+
+- Filtrar por puerto y protocolo
+$iptables -A INPUT -p tcp --dport 9090 -j ACCEPT
+
+- Aceptar pings
+$iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+$iptables -A OUTPUT -p icmp --icmp-type echo-reply -j ACCEPT
+$iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+- Filtrar por interfaz - aceptar todo de localhost
+$iptables -A INPUT -i lo -j ACCEPT
+             OUTPUT -o 
+
+- Lista de bloqueados
+black_list = "10.6.0.145/32 10.6.0.173/32"
+$ for ip in $black_list; do
+	iptables -A INPUT --source $ip -j REJECT
+	iptables -A OUTPUT --destination $ip -j REJECT
+	iptables -A FORWARD --destination $ip -j REJECT
+done
+
+- Filtrar por usuario 
+	->permitir a root toda salida
+	$iptables -A OUTPUT -m owner --uid-owner root -j ACCEPT
+
+	->bloquear la salida de kali
+	$iptables -A OUTPUT -m owner --uid-owner kali -j REJECT
+
+- Crear propia regla (-N) - regla para loguear y rechazar
+$iptables -N drop-and-log-it
+$iptables -A drop-and-log-it -m limit --limit 60/min -j LOG --log-prefix "@DENIED: " --log-level 7
+$iptables -A drop-and-log-i -j REJECT
+
+	->Las otras cadenas pueden usarlo - poner al final
+	$iptables -A INPUT -j drop-and-log-it
+
+-Nat - cambiar ip de origen
+$iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-source 1.2.3.4
+
+- Nat - cambiar ip de destino
+$iptables -t nat -A PREROUTING -d 192.168.0.14/32 -j DNAT --to-destination 192.168.0.15
+	->Todo lo que tiene como destino a .14 se cambia con destino a .15
+
+- Nat ejemplo: forwardear desde "internet" el puerto 8080 al ssh de una maquina interna
+$iptables -t nat -A POSTROUTING -o eth0 -j SNAT --to-soruce 10.6.0.78
+$iptables -t nat -A PREROUTING -p tcp --destination-port 8080 -i eth0 -j DNAT --to-destination 192.168.122.78:22
+$iptables -A FROWARD -i eth0 -o virbr0 -p tcp --destination-port 22 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+
+- Parametros importantes de la red
+	*/proc/sys/net/ipv4/tcp_syncookies: Al activarlo, permite guardarse cookies de SYN requests para luchar contra un SYN attack (un DoS attack)
+
+	*/proc/sys/net/ipv4/ip_dynaddr
+
+	*/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts: Desactiva respuestas automaticas a ICMP broadcasts - proteje contra ataques smurf
+		-> The Smurf Attack is a distributed denial-of-service attack in which large numbers of Internet Control Message Protocol (ICMP) packets with the intended victim's spoofed source IP are broadcast to a computer network using an IP Broadcast address.
+
+	*/proc/sys/net/ipv4/icmp_ignore_bogus_error_responses: Ignora warnings dado por el kernel cuando se recibe ese tipo de error, evitando que crear un archivo de log gigante
+
+	*/proc/sys/net/ipv4/conf/*/accept_redirects: si acepta redireccionamiento de mensajes ICMP
+
+	*/proc/sys/net/ipv4/conf/*/log_martians: le dice al kernel que logue en el syslog cuando se dropea un paquete que dice venir de una interfaz de la cual no viene (ver tmb rp_filter)
+
+
+
+***Cosas x hacer***
+1) Probar DHCP entregando siempre un mismo ip
+2) Probar arp conectados con cable entre si
+3) Probar rip (?)
+4) Probar ssh -D -> tener conexion a internet
