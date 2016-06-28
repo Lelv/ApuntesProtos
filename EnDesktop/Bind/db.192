@@ -1,0 +1,10 @@
+$TTL	86400
+@	IN	SOA	winteriscoming.com. admin.winteriscoming.com. (
+		      260620160		; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			  86400 )	; Negative Cache TTL
+;
+@	IN	NS	dns.winteriscoming.com.
+14	IN	PTR	www.winteriscoming.com.

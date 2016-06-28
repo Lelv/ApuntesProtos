@@ -1,0 +1,17 @@
+server {
+	listen 80;
+	listen [::]:80;
+
+	server_name www.winteriscoming.com;
+
+	root /var/www/winteriscoming;
+	index index.html;
+
+	access_log /var/log/nginx/winter.log;
+	error_log /var/log/nginx/winter_error.log;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+}

@@ -1,0 +1,27 @@
+server {
+	listen 80;
+	listen [::]:80;
+
+	server_name foo;
+
+	root /var/www/foo;
+	index index.html;
+
+	access_log /var/log/nginx/foo.log;
+	error_log /var/log/nginx/foo_error.log;
+
+	location / {
+		proxy_pass http://localhost:8080;
+		proxy_set_header Host banana;
+		#try_files $uri $uri/ =404;
+	}
+
+	location /superfoo/ {
+		auth_basic on;
+		auth_basic_user_file usuarios.txt;
+		add_header Gay true;
+		#try_files $uri $uri.html =404;
+		return 301 bar$request_uri;
+	}
+
+}

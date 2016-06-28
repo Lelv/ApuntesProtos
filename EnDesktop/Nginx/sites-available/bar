@@ -1,0 +1,21 @@
+server {
+	listen 9000;
+	listen [::]:9000;
+
+	server_name bar;
+
+	root /var/www/bar;
+	index index.html;
+
+	access_log /var/log/nginx/bar.log;
+	error_log /var/log/nginx/bar_error.log;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+	location /uva {
+		return 305;
+	}
+
+}

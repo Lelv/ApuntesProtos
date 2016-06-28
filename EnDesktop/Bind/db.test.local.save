@@ -1,0 +1,14 @@
+;
+; BIND data file for local loopback interface
+;
+$TTL	604800
+@	IN	SOA	dnstest.lelv. root.dnstest.lelv. (
+			150420160	; Serial
+			 604800		; Refresh
+			  86400		; Retry
+			2419200		; Expire
+			 604800 )	; Negative Cache TTL
+;
+@	IN	NS	dnstest.lelv.
+@	IN	A	10.0.2.15
+;@	IN	A	127.0.0

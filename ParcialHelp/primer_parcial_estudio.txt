@@ -1,0 +1,322 @@
+Temas
+	- HTTP: uri/url, http, servers, cookies
+	- Programación sockets
+	- Resolución de nombres
+	- Mail
+
+
+
+******HTTP*******
+- URI: Uniform Resource Identifier
+	* URL: Uniform Resource Locator
+		<scheme>://<user>:<password>@<host>:<port>/<path>?<query>
+	* URN: Uniform Resource Name
+
+- Mensajes HTTP
+	* Request: cliente -> servidor
+	* Response: servidor -> cliente
+
+- Request
+	* GET: Solicita unr ecurso al servidor
+	* HEAD: Solicitar solo los headers del recurso
+	* POST: Envía información al servidor para ser procesada
+	* PUT: Envía un recurso al servidor
+	* TRACE: Analiza el recorrido de la solicitud
+	* OPTIONS: Consulta los métodos disponibles en el servidor
+	* DELETE: Elimina un recurso del servidor
+
+- Response: Codigos 
+	* 1XX: Información
+	* 2XX: Éxito
+	* 3XX: Redirección
+	* 4XX: Error en cliente
+	* 5XX: Error en servidor
+
+	-> Lista completa: https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+
+- MIME: Describir contenido multimedia
+	* Lista completa: http://www.freeformatter.com/mime-types-list.html
+
+- Paquetes HTTP
+
+	1) Startline: Versión, código de respueseta, y mensaje
+		* Request: [GET|POST|HEAD|...] / HTTP/1.1
+		* Response: HTTP/1.1 200 OK
+
+	2) Headers
+		* Generales
+			- Cache-control: Directivas para cache
+			- Connection: Se definen opcionese de conexión
+			- Date: Fecha de creación del mensaje
+			- Transfer-Encoding: Indica el encoding de transferencia
+			- Via: Muestra la lista de intermediarios por los que pasó el mensaje
+		* De solicitudes
+			- Accept: Tipo de contenido aceptado por el cliente
+			- Accept-Charset: Charset (ISO-xxxx, UTF-8) aceptado por el cliente
+			- Accept-Encoding: Encoding (gzip, compress) aceptado por el cliente
+			- Expect: Comportamiento esperado del server frente al request
+			- From: Email del usuario de la aplicación que generó el request
+			- Host: Servidor y puerto destino del request
+			- If-Modified-Since: Condiciona al request a la fecha indicada
+			- Refer: URL del documento que generó el request
+			- User-Agent: Aplicación que generó el request
+		* De respuestas
+			- Age: Estimación en segundos del tiempo que fue generada la respueseta en el server
+			- Location: URI del recurso solicitado
+			- Retry-After: TIempo de delay para reintento
+			- Server: Descripcioón del software del server
+		* De contenido
+			- Allow: Métodos aplicables al recurso
+			- Content-Encoding
+			- Content-Length
+			- Content-Location
+			- Content-MD5
+			- Content-Type
+			- Expires: Fecha de expiración del recurso
+			- Last-Modified: Fecha de modificación del recurso
+
+		-> Lista completa: https://en.wikipedia.org/wiki/List_of_HTTP_header_fields
+
+- Cookies: pequeña pieza de infromación enviada por el servidor y almacenada por el browswer usada para mantener un estado entre el cliente y el servidor
+	* Servidor: Response header -> Set-Cookie: _____________
+	* Cliente: Request header -> Cookie: ______________
+- Tipos de cookies
+	* Session cookie: existe solo en memoria temporaria mientras que el usuario navega una pagina web. El browswer la borra cuando el usuario la cierra. No tienen fecha de expiración.
+	* Persistent cookie: Pueden vivir por largos plazos de tiempo
+
+
+
+******DNS*******
+
+- Archivos
+	* /etc/hosts: Contiene una linea por cada IP y el/los nombres asociados a dicho IP
+	* /etc/host.conf: Contiene varios settings, entre ellos el orden de busqueda (order hosts,bind)
+	* /etc/nsswitch.conf: Misma idea que arriba -> Para el orden => hosts: files dns
+	* /etc/resolv.conf:  nameserver (direcciones) | domain (nombre) || search (dominios)
+
+- Tipos de busqueda
+	* A: dirección ipv4
+	* AAAA: dirección ipv6
+	* CNAME: Alias de un nombre a otro
+	* MX: mail
+	* NS: authorative name server
+	* PTR: para reverse DNS lookups
+	* SOA: start of authority record
+	* TXT: text record
+	* ANY: cualquier cosa
+
+	-> Lista completa: https://en.wikipedia.org/wiki/List_of_DNS_record_types
+
+
+
+---------- CURL --------------
+https://curl.haxx.se/docs/manpage.html
+
+* Mandar simple paquete
+$curl itba.edu.ar:80
+	-> Manda
+	GET / HTTP/1.1
+	User-Agent: curl/7.38.0
+	Host: itba.edu.ar:9090
+	Accept: */*
+
+* Definir user agent: -A
+$curl itba.edu.ar -A "Mozilla"
+	-> Manda
+	GET / HTTP/1.1
+	User-Agent: Mozilla
+	Host: itba.edu.ar
+	Accept: */*
+
+* Definir una cookie: -b
+$curl itba.edu.ar -b "usuario= lean"
+	-> Manda
+	GET / HTTP/1.1
+	User-Agent: curl/7.38.0
+	Host: itba.edu.ar
+	Accept: */*
+	Cookie: usuario= lean
+
+* Guardar cookie en un archivo: -c
+$curl itba.edu.ar -c "/home/lelv/cookies"
+
+* Mandar datos mediante POST: -d
+$curl localhost:9090 -d "usuario=lean&pass=banana"
+
+	->Manda
+	POST / HTTP/1.1
+	User-Agent: curl/7.38.0
+	Host: localhost:9090
+	Accept: */*
+	Content-Length: 24
+	Content-Type: application/x-www-form-urlencoded
+
+	usuario=lean&pass=banana
+
+* Mandar datos con Get:
+$curl localhost:9090 -G -d "usuario=lean" -d "pass=banana"
+	GET /?usuario=lean&pass=banana HTTP/1.1
+	User-Agent: curl/7.38.0
+	Host: localhost:9090
+	Accept: */*
+
+* Guardar el header response en un archivo: -D
+$curl itba.edu.ar -D foo
+
+* Mandar el referer (la pagina web previa): -e
+$curl itba.edu.ar -e "iol.itba.edu.ar"
+
+* Mandar custom header: -H
+$curl localhost:9090 -H "Dia: Sabado"
+
+	-> Manda
+	GET / HTTP/1.1
+	User-Agent: curl/7.38.0
+	Host: localhost:9090
+	Accept: */*
+	Dia: Sabado
+
+	- Puedo pisar los que ya vienen por default en curl
+	- Puedo removerlos con un header vacio
+	$curl localhost:9090 -H "Host:"
+
+* Mostrar sólo el response header: -I
+$curl itba.edu.ar -I
+
+	-> Mostrar ambos header + data: -i
+
+* Seguir buscando cuando el servidor devuelve codigo 3XX y te tira un nuevo location: -L
+$curl google.com -I -L
+
+	-> Primero devuelve
+	HTTP/1.1 302 Found
+	Cache-Control: private
+	Content-Type: text/html; charset=UTF-8
+	Location: http://www.google.com.ar/?gfe_rd=cr&ei=389uV7i1BIiq8we-0IHgAQ
+	Content-Length: 262
+	Date: Sat, 25 Jun 2016 18:39:27 GMT
+
+	==> Como te indica un nuevo lugar, curl ahora hace un segundo get pero en el nuevo location - ahi devuelve la página posta
+
+* Mandar autenticación de usuario: -u
+$curl localhost:9090 -u "lean:banana"
+
+	-> Manda
+	GET / HTTP/1.1
+	Authorization: Basic bGVhbjpiYW5hbmE=
+	User-Agent: curl/7.38.0
+	Host: localhost:9090
+	Accept: */*
+
+	=> La autenticación está en base 64
+	$echo bGVhbjpiYW5hbmE= | base64 -d  
+	lean:banana
+
+* Ver headers de salida, entrada, y la data: -v
+$curl itba.edu.ar -v
+
+* Mandar un request method propio: -X // Ir más alla de GET/POST/....
+$curl localhost:9090 -X "zaraza"
+	-> Manda
+	zaraza / HTTP/1.1
+	User-Agent: curl/7.38.0
+	Host: localhost:9090
+	Accept: */*
+
+
+
+---------- DIG --------------
+http://linux.die.net/man/1/dig
+
+* Entendiendo el output
+	- Question section: la pregunta realizada
+	- Answer section: la respuesta recibida por el DNS
+	- Authority section: muestra el servidor DNS que tiene la autoridad para responder el query
+	- Additional section: muestra el ip de los servidores que aparecen en el answer y authority section
+
+	- Columnas
+		1) Lo buscado - NAME
+		2) Time to live - TTL
+		3) La clase - IN (internet)
+		4) El tipo - [A|AAAA|MX|NS|...]
+		5) La respuesta - ip u otro NAME (cuyo ip se muestra en el additional section)
+
+* Tipico comando
+$dig name type @server
+	-> Name: nombre del host
+	-> Type: tipo de busqueda (A/MX/NS/...)
+	-> Server: a quien se le quiere preguntar (opcional)
+$dig www.google.com A @ns2.google.com
+
+* Opciones:
+	-b: Cambiar la ip destino
+	-t: Define el tipo de búsqueda
+	-q: Cmabia el nombre de query a otro
+
+* Reverse lookup: Te da el name a partir de un ip
+$dig -x 183.14.54.2
+
+
+---------- Base64 --------------
+
+* Decodificación simple
+$ echo "texto a decodificar" | base64 -d
+
+* Codificar de un archivo [a otro]
+$ base64 archivoFuente [> archivoDestino]
+
+* Decodificar de un archivo a otro
+$ base64 -d < archivoFuente > archivoDestino
+
+
+---------- NGINX --------------
+
+* Setear proxy [en location] -> ya le pasa el uri
+proxy_pass http://localhost:9090;
+
+	-> Cambiarle algun header: ej - Host
+	proxy_set_header Host banana;
+
+* Devolver un código [en location] 
+return 301 http://www.google.com
+
+	-> Va a devolver un Moved Permanently, y que su ubicación actual es google
+
+* Agregar un header a lo que devuelvo [en location]
+add_header nombre valor
+
+
+* Que mi servidor tenga autenticación básica [en location]
+auth_basic on;
+auth_basic_user_file usuarios.txt;
+
+	->El archivo de usuarios.txt se encuentra en /etc/nginx y debe ser creado con
+	$htpasswd -c -b usuarios.txt usuario contraseña
+
+* Que siempre te devuelva una única página (ej: index.html)
+	location /index.html {
+		try_files $uri $uri/ =404;
+	}
+
+	location / {
+		rewrite ^ /index.html break;
+	}
+
+
+* Server y Location: 
+https://www.digitalocean.com/community/tutorials/understanding-nginx-server-and-location-block-selection-algorithms
+
+* Todo proxy: http://nginx.org/en/docs/http/ngx_http_proxy_module.html
+
+* Variables que puedo usar: http://nginx.org/en/docs/http/ngx_http_core_module.html#variables
+
+
+---------- Postfix --------------
+
+*Mandar mail
+$echo "este es el cuerpo del mail" | mail -s "Este es el subject" destinatario@falopa.com
+	o
+$mail -s "Este es el subject" destinatario@falopa.com < archivoconmail.txt
+
+* Reconfiguar
+$dpkg-reconfigure postfix

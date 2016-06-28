@@ -1,0 +1,87 @@
+Resolución de parcial
+
+
+Ejercicio1
+------------
+
+
+1) 
+a-Al acceder a parcial.protos ocurra una redireccion temporal a parcial.protos/api/
+
+*Defino server /etc/nginx/
+$cp default protos
+
+
+server_name parcial.protos
+
+location / {
+	return 302 http://parcial.protos/api/;
+}
+
+*Lo pruebo
+curl -Hhost:parcial.protos http://localhost/ -i
+(otra alternativa era modificar el /etc/hosts)
+
+b- Acceder a parcial.protos/api/health obtenga la misma salida que api.protos:9090/api/health
+
+*Averiguar el ip
+$dig foo.leak.com.ar @dns0.zoneedit.com -t TXT
+
+*Decodifico con base 64
+$echo "-----" | base64 -d
+
+*Modifico parcial.protos
+
+location /api/health {
+	proxy_set_header Host api.protos
+	proxy_pass http://localhost:9090/api/health;
+
+}
+
+*Lo pruebo
+$curl -Hhost:parcial.protos http://localhost/api/health -i
+
+$curl -Hhost:api.protos http://localhsot:9090/api/health -i
+
+--> Deben devolver lo mismo
+(probamos con localhost porque ya no esta en el ip de antes)
+
+c - 
+
+$curl -Hhost:api.protos http://localhsot:9090/api/foo -i 
+Tira error de autorizacion
+
+*Modifico parcial
+
+location /api/foo {
+	porxy_set header host api.protos;
+	proxy_set_header Authorization "Basic VVFEWKLFJEWKL";
+	proxy_pass http://localhost:9090/api/foo;
+}
+
+(aca tmb probamos con localhost porque ya no esta en el ip de antes)
+
+--> Lo del authroziation lo pude sacar con 
+$curl -Hhost:api.protos http://localhsot:9090/api/foo -v -u USER:pass
+
+Extra - En realidad no se podia usar -H
+*Modifico /etc/hosts
+parcial.protos 127.0.0.1
+
+
+
+Ejercicio 2
+------------
+(asumo ip: 10.1.34.74)
+
+$curl http://10.1.34.74/secreto/543 -Hhost: fewfewfewa -v
+
+Location: /raw/def
+
+$curl http://10.1.34.74/raw/def/ -Hhost: fewfewfewa -v
+
+$curl http://10.1.34.74/raw/def/ -Hhost:fewfewfewa -Haccept:application/json -v
+
+301 Moved permanently: /ra/def/lalala.js
+
+$curl http://10.1.34.74/raw/lalala.js -Hhost:fewfewfewa  -H'Authorizaition: Basic VVNFUJpxeaz'-v

@@ -1,0 +1,27 @@
+server {
+	listen 80;
+	listen [::]:80;
+
+	server_name parcial.protos;
+
+	#root /var/www/bar;
+	#index index.html;
+
+	#access_log /var/log/nginx/bar.log;
+	#error_log /var/log/nginx/bar_error.log;
+
+	location / {
+		return 302 http://parcial.protos/api/;
+	}
+	
+	location /api/health {
+		proxy_pass http://api.protos:9090/api/health;
+		proxy_set_header Host api.protos;
+	}
+
+	location /api/foo {
+		proxy_pass http://api.protos:9090/api/foo;
+		proxy_set_header Host api.protos;
+		proxy_set_header Authorization "Basic VVNFUjpwYXNz";
+	}
+}

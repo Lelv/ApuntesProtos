@@ -1,0 +1,17 @@
+server {
+	listen 80;
+	listen [::]:80;
+
+	server_name foo;
+
+	root /var/www/foo;
+	index index.html;
+
+	access_log /var/log/nginx/foo.log;
+	error_log /var/log/nginx/foo_error.log;
+
+	location / {
+		proxy_pass 		#try_files $uri $uri/ =404;
+	}
+
+}
